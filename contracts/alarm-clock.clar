@@ -32,7 +32,7 @@
 (define-private (payout-bounty-pct)
  (begin 
 
-   (unwrap-panic (as-contract (stx-transfer? (/ (var-get bounty) u10) escrow (var-get lastSubmitted))))
+   (as-contract (stx-transfer? (/ (var-get bounty) u10) escrow (var-get lastSubmitted)))
    ;; (unwrap-panic (as-contract (stx-transfer? (var-get bounty) escrow lastSubmitted)))
    (var-set bounty (/ (var-get bounty) u10)) ;; reduce bounty amount by 10%
  )
@@ -41,7 +41,7 @@
 ;; send the bounty to the person who woke me up!
 (define-private (payout-bounty)
    (begin
-      (unwrap-panic (as-contract (stx-transfer? (var-get bounty) escrow (var-get lastSubmitted))))
+      (as-contract (stx-transfer? (var-get bounty) escrow (var-get lastSubmitted)))
       (var-set alarmActive false) ;; turn off alarm, oracle will call this to set alarm again later
       (var-set bounty u0) ;; reset the bounty once payout has been claimed
    )
