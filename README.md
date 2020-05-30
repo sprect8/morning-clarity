@@ -56,3 +56,40 @@ Key bits of the code are the oracle (which controls when an alarm can be active)
 ```
 
 Alarms can trigger only when the oracle says so. (alarmActive set to true). However we don't stop people from bidding.
+
+When the user calls "iamAwake" we actually disburse the amount from the escrow itself:
+```
+;; send the bounty to the person who woke me up!
+(define-private (payout-bounty)
+   (begin
+      (as-contract (stx-transfer? (var-get bounty) escrow (var-get lastSubmitted)))
+      (var-set alarmActive false) ;; turn off alarm, oracle will call this to set alarm again later
+      (var-set bounty u0) ;; reset the bounty once payout has been claimed
+   )
+)
+...
+;; owner hits the stop alarm button, wakes up and the last submitted transaction gets the bounty
+
+(define-public (iamAwake)
+  (begin
+    (if-not-owner-then-panic)
+    (if (is-eq (var-get bounty) u0)
+        (ok true) ;; no bounty, no need to payout
+      (if (> (var-get bounty) u0)
+         (ok (payout-bounty))
+         (ok true)
+      )
+    )
+  )
+)
+```
+
+## Some challenges
+- The Provider code is still very much alpha, and I couldn't find good documentation online
+- There are some weird nuances in the language, especially the Provider/Client interface
+  1. Why do I specify uint and int differently and as a string?!
+  2. How come the transactions don't unwrap nicely and I ended up having to use text to compare
+  3. Tuples, transactions don't work very well
+  4. Compiler output can be challenging!
+
+Overall a decent language once you get the hang of it. Great stuff!
